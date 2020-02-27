@@ -262,11 +262,15 @@ def equality_of_opportunity_thresholds(group_predictions,
       my_reward += np.multiply(confusion_matrix, cost_matrix.as_array()).sum()
     return -my_reward
 
+  if not 'dummy' in group_predictions.keys():
+    import pdb; pdb.set_trace()  # TODO(creager): remove
   opt = scipy.optimize.minimize_scalar(
       negative_reward,
       bounds=[0, 1],
       method="bounded",
       options={"maxiter": 100})
+  if not 'dummy' in group_predictions.keys():
+    import pdb; pdb.set_trace()  # TODO(creager): remove
   return ({
       group: _threshold_from_tpr(roc[group], opt.x, rng=rng) for group in groups
   })

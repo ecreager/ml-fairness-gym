@@ -35,6 +35,8 @@ class OracleThresholdAgent(classifier_agents.ThresholdAgent):
     self.env = env
 
   def _record_training_example(self, observation, action, reward):
+    print('now recording')
+    # TODO(creager): try this experiment without the orcale threshold agent
     self._training_corpus = classifier_agents.TrainingCorpus()
     applicant_distribution = self.env.state.params.applicant_distribution
     for component in applicant_distribution.components:

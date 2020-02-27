@@ -292,6 +292,7 @@ class _CreditShift(core.StateUpdater):
     # Cast to list so we can mutate it.
     cluster_probs = list(
         params.applicant_distribution.components[group_id].weights)
+    import pdb; pdb.set_trace()  # TODO(creager): remove
 
     rng = np.random.RandomState()
     for _ in range(10):

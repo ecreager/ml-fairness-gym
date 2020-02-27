@@ -60,7 +60,7 @@ class Experiment(core.Params):
   # Policy the agent uses when setting thresholds.
   threshold_policy = attr.ib(default=MAXIMIZE_REWARD)
   # Number of steps before applying the threshold policy.
-  burnin = attr.ib(default=50)
+  burnin = attr.ib(default=100)
 
   ##############
   # Run params #
@@ -84,6 +84,7 @@ class Experiment(core.Params):
     env = lending.DelayedImpactEnv(env_params)
 
     agent_params = classifier_agents.ScoringAgentParams(
+        freeze_classifier_after_burnin=False,  # TODO(creager): remove
         feature_keys=['applicant_features'],
         group_key='group',
         default_action_fn=(lambda: 1),
@@ -94,13 +95,25 @@ class Experiment(core.Params):
         cost_matrix=params.CostMatrix(
             fn=0, fp=-1, tp=env_params.interest_rate, tn=0))
 
-    agent = oracle_lending_agent.OracleThresholdAgent(
+    # agent = oracle_lending_agent.OracleThresholdAgent(
+    #     action_space=env.action_space,
+    #     reward_fn=rewards.BinarizedScalarDeltaReward(
+    #         'bank_cash', baseline=env.initial_params.bank_starting_cash),
+    #     observation_space=env.observation_space,
+    #     params=agent_params,
+    #     env=env)
+    #
+    # TODO(creager): figure out how robust regression can be incorporated
+    #  into TresholdAgent. I'm confused about how to this since the thresholds
+    #  are set according to the TrainingCorpus alone, and the TrainingCorpus
+    #  doesn't seem to take predictions into account...
+    agent = classifier_agents.ThresholdAgent(
         action_space=env.action_space,
         reward_fn=rewards.BinarizedScalarDeltaReward(
             'bank_cash', baseline=env.initial_params.bank_starting_cash),
         observation_space=env.observation_space,
         params=agent_params,
-        env=env)
+    )
     agent.seed(100)
     return env, agent
 
@@ -112,6 +125,7 @@ class Experiment(core.Params):
     """
 
     env, agent = self.scenario_builder()
+    print('agent.frozen before', agent.frozen)  # TODO(creager): remove
     metrics = {
         'initial_credit_distribution':
             lending_metrics.CreditDistribution(env, step=0),
@@ -139,6 +153,17 @@ class Experiment(core.Params):
 
     metric_results = run_util.run_simulation(env, agent, metrics,
                                              self.num_steps, self.seed)
+    print('agent.frozen after', agent.frozen)
+    print('potential outcomes')
+    for i, history_item in enumerate(env._get_history()):
+      state = history_item.state
+      print(i, state.group_id, state.will_default)
+    print('is labeled')
+    for i, example in enumerate(agent._training_corpus.examples):
+      print(i, example, example.is_labeled())
+    # NOTE: pot. out. will_default set in lending_params.ApplicantDistribution
+    import pdb; pdb.set_trace()  # TODO: remove
+
     report = {
         'environment': {
             'name': env.__class__.__name__,

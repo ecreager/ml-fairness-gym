@@ -192,6 +192,8 @@ class ScoringAgent(core.Agent):
 
     if self._step < self.params.burnin:
       action = self.params.default_action_fn()
+      # TODO(creager): implement version of this agent whose
+      #  defalut_action_fn comes from a max profit policy
       # No reason to train during burnin. Train on the first non-burnin step.
     else:
       self._train()
@@ -222,6 +224,8 @@ class ScoringAgent(core.Agent):
           "propensity score weighting training is not implemented YET!")
 
     training_corpus = self._training_corpus.remove_unlabeled()
+    print(1, len(self._training_corpus.get_features()),
+          len(training_corpus.get_features()))  # TODO(creager): remove
 
     # Don't train if there's nothing to train on.
     if not training_corpus.examples:
@@ -233,6 +237,9 @@ class ScoringAgent(core.Agent):
 
     self._score_transform_update(training_corpus)
     self._set_thresholds(training_corpus)
+    print(2, len(self._training_corpus.get_features()),
+          len(training_corpus.get_features()))  # TODO(creager): remove
+    # 1/0
 
   def _set_thresholds(self, training_corpus):
     self.global_threshold = threshold_policies.single_threshold(
@@ -270,6 +277,7 @@ class ScoringAgent(core.Agent):
     return self._score_transform(features)
 
   def _record_training_example(self, observation, action, reward):
+    print('recording')  # TODO(creager): remove
     if action is None or observation is None:
       return
 

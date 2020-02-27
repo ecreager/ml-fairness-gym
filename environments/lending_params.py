@@ -47,6 +47,7 @@ class ApplicantDistribution(distributions.Distribution):
   features = attr.ib()  #  type: distributions.Distribution
   group_membership = attr.ib()  #  type: distributions.Distribution
   will_default = attr.ib()  #  type: distributions.Distribution
+  # TODO(creager): confirm that distn p(X, A, Y) is totally factorized!!
 
   def __attrs_post_init__(self):
     self.dim = self.features.dim
@@ -204,6 +205,7 @@ DELAYED_IMPACT_CLUSTER_PROBS = (
 DELAYED_IMPACT_SUCCESS_PROBS = (0.1, 0.2, 0.45, 0.6, 0.65, 0.7, 0.7)
 
 
+# TODO(creager): try version where group_likelihoods are not balanced
 def two_group_credit_clusters(
     group_likelihoods=(0.5, 0.5),
     cluster_probabilities=DELAYED_IMPACT_CLUSTER_PROBS,
@@ -224,6 +226,7 @@ def two_group_credit_clusters(
     # Use a one-hot encoding of group-id.
     group_vec = np.zeros(2)
     group_vec[idx] = 1
+    # TODO(creager): try version where success probs differ across groups
     components.append(
         _credit_cluster_builder(
             group_membership=tuple(group_vec),

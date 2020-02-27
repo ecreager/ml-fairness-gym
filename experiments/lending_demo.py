@@ -21,6 +21,8 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import pprint
+
 from absl import app
 from absl import flags
 from agents import threshold_policies
@@ -123,11 +125,11 @@ def main(argv):
       figure=fig)
 
   print('Profit %s %f' % (title, result['metric_results']['profit rate']))
-  plt.show()
+  plt.savefig('/tmp/lending_experiment.pdf')
 
   if FLAGS.outfile:
     with open(FLAGS.outfile, 'w') as f:
-      f.write(result)
+      f.write(pprint.pformat(result, indent=2))
 
 
 if __name__ == '__main__':
